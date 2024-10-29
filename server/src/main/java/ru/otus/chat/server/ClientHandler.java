@@ -23,11 +23,14 @@ public class ClientHandler {
         this.socket = socket;
         this.in = new DataInputStream(socket.getInputStream());
         this.out = new DataOutputStream(socket.getOutputStream());
+        String confirmation = "Клиент подключился";
+        out.writeUTF(confirmation);
         userCount++;
-        username = "user" + userCount;
+        String nameRequest = "Введите никнейм";
+        out.writeUTF(nameRequest);
+        username = in.readUTF();
         new Thread(() -> {
             try {
-                System.out.println("Клиент подключился ");
                 while (true) {
                     String message = in.readUTF();
                     if (message.startsWith("/")) {
@@ -35,8 +38,16 @@ public class ClientHandler {
                             sendMessage("/exitok");
                             break;
                         }
-                        
-
+                        if (message.startsWith("/w ")) {
+                            message = message.replace("/w ", "");
+                            for (ClientHandler client : server.getClients()) {
+                                if (message.startsWith(client.username)) {
+                                    message = message.replace(client.username, "");
+                                    client.sendMessage(username + " : " +  message);
+                                    receiveMessage();
+                                }
+                            }
+                        }
                     } else {
                         server.broadcastMessage(username + " : " + message);
                     }
@@ -52,6 +63,14 @@ public class ClientHandler {
     public void sendMessage(String message) {
         try {
             out.writeUTF(message);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void receiveMessage() {
+        try {
+            in.readUTF();
         } catch (IOException e) {
             e.printStackTrace();
         }

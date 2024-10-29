@@ -37,6 +37,8 @@ public class Client {
         }).start();
 
         while (true) {
+            String name = scanner.nextLine();
+            out.writeUTF(name);
             String message = scanner.nextLine();
             out.writeUTF(message);
             if (message.startsWith("/exit")) {
