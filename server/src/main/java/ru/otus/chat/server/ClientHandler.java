@@ -43,7 +43,8 @@ public class ClientHandler {
                             for (ClientHandler client : server.getClients()) {
                                 if (message.startsWith(client.username)) {
                                     message = message.replace(client.username, "");
-                                    client.sendMessage(username + " : " +  message);
+                                    sendMessage("to " + client.username + " : " +  message);
+                                    client.sendMessage(username + " : " + message);
                                     receiveMessage();
                                 }
                             }
