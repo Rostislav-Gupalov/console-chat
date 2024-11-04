@@ -5,3 +5,4 @@ import java.util.List;
 public interface UserService extends AutoCloseable{
     List<User> getAll();
 }
+//
