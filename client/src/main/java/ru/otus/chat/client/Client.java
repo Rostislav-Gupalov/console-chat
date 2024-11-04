@@ -25,6 +25,14 @@ public class Client {
                         if (message.startsWith("/exitok")) {
                             break;
                         }
+                        if (message.startsWith("/authok ")) {
+                            System.out.println("Аутентификация прошла успешно с именем пользователя: "+
+                                    message.split(" ")[1]);
+                        }
+                        if (message.startsWith("/regok ")) {
+                            System.out.println("регистрация прошла успешно с именем пользователя: "+
+                                    message.split(" ")[1]);
+                        }
                     } else {
                         System.out.println(message);
                     }
@@ -37,8 +45,6 @@ public class Client {
         }).start();
 
         while (true) {
-            String name = scanner.nextLine();
-            out.writeUTF(name);
             String message = scanner.nextLine();
             out.writeUTF(message);
             if (message.startsWith("/exit")) {
@@ -65,3 +71,4 @@ public class Client {
         }
     }
 }
+

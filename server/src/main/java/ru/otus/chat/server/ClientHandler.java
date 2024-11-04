@@ -10,49 +10,78 @@ public class ClientHandler {
     private Socket socket;
     private DataInputStream in;
     private DataOutputStream out;
-
     private String username;
-    private static int userCount = 0;
+    private String role;
 
     public String getUsername() {
         return username;
     }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setRole(String role) {this.role = role;}
 
     public ClientHandler(Server server, Socket socket) throws IOException {
         this.server = server;
         this.socket = socket;
         this.in = new DataInputStream(socket.getInputStream());
         this.out = new DataOutputStream(socket.getOutputStream());
-        String confirmation = "Клиент подключился";
-        out.writeUTF(confirmation);
-        userCount++;
-        String nameRequest = "Введите никнейм";
-        out.writeUTF(nameRequest);
-        username = in.readUTF();
         new Thread(() -> {
             try {
+                System.out.println("Клиент подключился ");
+                //цикл аутентификации
                 while (true) {
                     String message = in.readUTF();
                     if (message.startsWith("/")) {
-                        if (message.startsWith("/exit")){
+                        if (message.startsWith("/exit")) {
                             sendMessage("/exitok");
                             break;
                         }
-                        if (message.startsWith("/w ")) {
-                            message = message.replace("/w ", "");
-                            for (ClientHandler client : server.getClients()) {
-                                if (message.startsWith(client.username)) {
-                                    message = message.replace(client.username, "");
-                                    sendMessage("to " + client.username + " : " +  message);
-                                    client.sendMessage(username + " : " + message);
-                                    receiveMessage();
-                                }
+                        // /auth login password
+                        if (message.startsWith("/auth ")) {
+                            String[] elements = message.split(" ");
+                            if (elements.length != 3) {
+                                sendMessage("Неверный формат команды /auth ");
+                                continue;
                             }
+                            if (server.getAuthenticatedProvider()
+                                    .authenticate(this, elements[1], elements[2])) {
+                                break;
+                            }
+                            continue;
                         }
-                    } else {
-                        server.broadcastMessage(username + " : " + message);
                     }
+                    sendMessage("Перед работой необходимо пройти аутентификацию командой " +
+                            "/auth login password");
                 }
+                System.out.println("Клиент " + username + " успешно прошел аутентификацию");
+
+                //цикл работы
+                while (true) {
+                    String message = in.readUTF();
+                    if (message.startsWith("/")) {
+                        if (message.startsWith("/exit")) {
+                            sendMessage("/exitok");
+                            break;
+                        }
+                        // /kick username
+                        if (message.startsWith("/kick ")) {
+                            String[] elements = message.split(" ");
+                            if (elements.length != 2) {
+                                sendMessage("Неверный формат команды /kick ");
+                                continue;
+                            }
+                            server.kick(this, elements[1]);
+                        }
+                    } else server.broadcastMessage(username + " : " + message);
+                }
+
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
@@ -61,7 +90,9 @@ public class ClientHandler {
         }).start();
     }
 
-    public void sendMessage(String message) {
+
+
+    public void sendMessage (String message){
         try {
             out.writeUTF(message);
         } catch (IOException e) {
@@ -69,15 +100,7 @@ public class ClientHandler {
         }
     }
 
-    public void receiveMessage() {
-        try {
-            in.readUTF();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void disconnect(){
+    public void disconnect() {
         server.unsubscribe(this);
         try {
             in.close();
@@ -95,4 +118,14 @@ public class ClientHandler {
             throw new RuntimeException(e);
         }
     }
+
 }
+
+
+
+
+
+
+
+
+
