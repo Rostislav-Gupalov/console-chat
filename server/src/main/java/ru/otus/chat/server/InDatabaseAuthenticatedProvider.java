@@ -1,7 +1,6 @@
 package ru.otus.chat.server;
 
 import java.sql.SQLException;
-import java.util.List;
 
     public class InDatabaseAuthenticatedProvider implements AuthenticatedProvider {
 
@@ -42,24 +41,6 @@ import java.util.List;
             server.subscribe(clientHandler);
             clientHandler.sendMessage("/authok " + authName);
             return true;
-        }
-
-        private boolean isLoginAlreadyExist(String login) {
-            for (User user : usersJdbc.getAll()) {
-                if (user.getLogin().equals(login)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        private boolean isUsernameAlreadyExist(String username) {
-            for (User user : usersJdbc.getAll()) {
-                if (user.getUsername().equals(username)) {
-                    return true;
-                }
-            }
-            return false;
         }
     }
 

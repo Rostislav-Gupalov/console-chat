@@ -25,7 +25,6 @@ public class ClientHandler {
         this.username = username;
     }
 
-    public void setRole(String role) {this.role = role;}
 
     public ClientHandler(Server server, Socket socket) throws IOException {
         this.server = server;
